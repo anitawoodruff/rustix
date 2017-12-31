@@ -1,0 +1,6 @@
+[package]
+name = "rustix"
+version = "0.1.0"
+authors = ["Anita Woodruff <anita.woodruff@gmail.com>"]
+
+[dependencies]
