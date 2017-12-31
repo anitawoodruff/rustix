@@ -11,19 +11,27 @@ struct Cube {
     solved : bool,
 }
 
+fn wrap_index(index: i8, max: i8) -> usize {
+    ((max + index) % max) as usize
+}
+
 impl Display for Cube {
     fn fmt(&self, formatter: &mut Formatter) -> FmtResult {
-        const COLORS: &[&str] = &["y", "r", "w", "p"];
-        fn get_color(solved: bool, face_index: usize) -> &'static str{
-            let unwrapped_color_index =
-                if solved {face_index} else {face_index - 1};
-            let wrapped_color_index = COLORS.len() + unwrapped_color_index % COLORS.len();
-            COLORS[wrapped_color_index]
+        fn get_color(solved: bool, face_index: i8) -> &'static str{
+            const NUM_COLORS: usize = 4;
+            const COLORS: [&str; NUM_COLORS as usize] = ["y", "r", "w", "p"];
+
+            let color_index = wrap_index(
+                if solved {face_index} else {face_index - 1},
+                NUM_COLORS as i8);
+
+            COLORS[color_index as usize]
         }
+
         let top = get_color(self.solved, 0);
-        let front = if self.solved {COLORS[1]} else {COLORS[0]};
-        let back_front = if self.solved {COLORS[2]} else {COLORS[1]};
-        let back_bottom = if self.solved {COLORS[3]} else {COLORS[2]};
+        let front = get_color(self.solved, 1);
+        let back_front = get_color(self.solved, 2);
+        let back_bottom = get_color(self.solved, 3);
         write!(formatter, "
                 ____________             ______1_____
                /  y  /  {}  /|           /|     |     |
