@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 // This is for implementing to_string.
 use std::fmt::{
     Display,
@@ -19,6 +17,8 @@ impl Display for Cube {
     fn fmt(&self, formatter: &mut Formatter) -> FmtResult {
         fn get_color(solved: bool, face_index: i8) -> &'static str{
             const NUM_COLORS: usize = 4;
+
+            // The order of this array determines the color order of the faces.
             const COLORS: [&str; NUM_COLORS as usize] = ["y", "r", "w", "p"];
 
             let color_index = wrap_index(
@@ -32,20 +32,24 @@ impl Display for Cube {
         let front = get_color(self.solved, 1);
         let back_front = get_color(self.solved, 2);
         let back_bottom = get_color(self.solved, 3);
+
         write!(formatter, "
                 ____________             ______1_____
                /  y  /  {}  /|           /|     |     |
               /_____/_____/ |          /g|  w  |  {}  |
-             /  y  /  {}  /|b|         /| |_____|_____|2
-            /_____/_____/ | |        |g|/|     |     |
+             /  y  /  {}  /|b|         /| |_____|_____|
+            /_____0_____/ | |        |g|/|     |     |
             |     |     |b|/|        | /g|  w  |  {}  |
-            |  r  |  {}  | /b|        |/| |_____|_____|
+            |  r  |  {}  | /b|        |/| |_____2_____|
             |_____|_____|/| |        |g|/  p  /  {}  /
             |     |     |b|/         | /_____/_____/
-            |  r  |  {}  | /2         |/  p  /  {}  /
-            |_____|_____|/           |_____/_____/
-                  1
-", top, back_front, top, back_front, front, back_bottom, front, back_bottom)
+            |  r  |  {}  | /          |/  p  /  {}  /
+            |_____1_____|/           |_____3_____/
+",
+top, back_front,
+top, back_front,
+front, back_bottom,
+front, back_bottom)
     }
 }
 
@@ -129,19 +133,18 @@ mod test {
                 ____________             ______1_____
                /  y  /  y  /|           /|     |     |
               /_____/_____/ |          /g|  w  |  w  |
-             /  y  /  y  /|b|         /| |_____|_____|2
-            /_____/_____/ | |        |g|/|     |     |
+             /  y  /  y  /|b|         /| |_____|_____|
+            /_____0_____/ | |        |g|/|     |     |
             |     |     |b|/|        | /g|  w  |  w  |
-            |  r  |  r  | /b|        |/| |_____|_____|
+            |  r  |  r  | /b|        |/| |_____2_____|
             |_____|_____|/| |        |g|/  p  /  p  /
             |     |     |b|/         | /_____/_____/
-            |  r  |  r  | /2         |/  p  /  p  /
-            |_____|_____|/           |_____/_____/
-                  1
+            |  r  |  r  | /          |/  p  /  p  /
+            |_____1_____|/           |_____3_____/
 ";
         assert!(
             cube.to_string() == expected,
-            "Expected {} but got {}", expected, cube);
+            "Expected {} but got {}\n", expected, cube);
     }
 
     #[test]
@@ -154,15 +157,14 @@ mod test {
                 ____________             ______1_____
                /  y  /  p  /|           /|     |     |
               /_____/_____/ |          /g|  w  |  r  |
-             /  y  /  p  /|b|         /| |_____|_____|2
-            /_____/_____/ | |        |g|/|     |     |
+             /  y  /  p  /|b|         /| |_____|_____|
+            /_____0_____/ | |        |g|/|     |     |
             |     |     |b|/|        | /g|  w  |  r  |
-            |  r  |  y  | /b|        |/| |_____|_____|
+            |  r  |  y  | /b|        |/| |_____2_____|
             |_____|_____|/| |        |g|/  p  /  w  /
             |     |     |b|/         | /_____/_____/
-            |  r  |  y  | /2         |/  p  /  w  /
-            |_____|_____|/           |_____/_____/
-                  1
+            |  r  |  y  | /          |/  p  /  w  /
+            |_____1_____|/           |_____3_____/
 ";
         assert!(
             cube.to_string() == expected,
