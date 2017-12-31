@@ -5,14 +5,14 @@ use std::fmt::{
     Result as FmtResult,
 };
 
+#[derive(Clone, Copy)]
 struct Cube {
-    solved: bool,
     turned: bool,
-    twists: i8
+    twists: usize,
 }
 
-fn wrap_index(index: i8, max: i8) -> usize {
-    ((max + index) % max) as usize
+fn wrap_index(index: i8, n: i8) -> usize {
+    ((n + index) % n) as usize
 }
 
 impl Display for Cube {
@@ -43,15 +43,22 @@ front, back_bottom)
     }
 }
 
+const NUM_COLORS: usize = 4;
+
 impl Cube {
+    fn new() -> Self {
+        Cube {
+            turned: false,
+            twists: 0,
+        }
+    }
+
     fn is_solved(&self) -> bool {
-        return self.solved;
+        return self.twists == 0;
     }
 
     fn twist(&mut self) {
-        self.twists += 1;
-        self.twists = self.twists % 4;
-        self.solved = self.twists == 0;
+        self.twists = wrap_index(self.twists as i8 + 1, NUM_COLORS as i8);
     }
 
     fn turn(&mut self) {
@@ -59,28 +66,17 @@ impl Cube {
     }
 
     fn twist_back(&mut self) {
-        self.solved = !self.solved;
+        self.twists = wrap_index(self.twists as i8 - 1, NUM_COLORS as i8);
     }
 
     fn get_color(&self, face_index: i8) -> &'static str{
-        const NUM_COLORS: usize = 4;
-
         // The order of this array determines the color order of the faces.
         const COLORS: [&str; NUM_COLORS as usize] = ["y", "p", "w", "r"];
 
-        let color_index = wrap_index(
-            if self.solved {face_index} else {face_index + self.twists},
-            NUM_COLORS as i8);
+        let color_index = wrap_index(face_index + self.twists as i8,
+                                     NUM_COLORS as i8);
 
         COLORS[color_index as usize]
-    }
-}
-
-fn build_cube() -> Cube {
-    Cube {
-        solved: true,
-        turned: false,
-        twists: 0,
     }
 }
 
@@ -100,7 +96,7 @@ fn print_cube_and_solved_status(cube: &Cube) {
 fn main() {
     println!("Hello, world!");
 
-    let mut cube = build_cube();
+    let mut cube = Cube::new();
     print_cube_and_solved_status(&cube);
 
     cube.twist();
@@ -119,24 +115,24 @@ fn main() {
 #[cfg(test)]
 mod test {
 
-    use super::build_cube;
+    use super::Cube;
 
     #[test]
     fn test_new_cube_is_solved() {
-        let cube = build_cube();
+        let cube = Cube::new();
         assert!(cube.is_solved());
     }
 
     #[test]
     fn test_cube_twisted_once_is_not_solved() {
-        let mut cube = build_cube();
+        let mut cube = Cube::new();
         cube.twist();
         assert!(!cube.is_solved());
     }
 
     #[test]
     fn test_cube_twisted_twice_is_not_solved() {
-        let mut cube = build_cube();
+        let mut cube = Cube::new();
         cube.twist();
         cube.twist();
         assert!(!cube.is_solved());
@@ -144,7 +140,7 @@ mod test {
 
     #[test]
     fn test_cube_twisted_four_times_is_solved() {
-        let mut cube = build_cube();
+        let mut cube = Cube::new();
         cube.twist();
         cube.twist();
         cube.twist();
@@ -154,23 +150,28 @@ mod test {
 
     #[test]
     fn test_turned_cube_is_still_solved() {
-        let mut cube = build_cube();
+        let mut cube = Cube::new();
         cube.turn();
         assert!(cube.is_solved());
     }
 
     #[test]
     fn test_twist_and_twist_back_is_solved() {
-        let mut cube = build_cube();
+        let mut cube = Cube::new();
         cube.twist();
         assert!(!cube.is_solved());
         cube.twist_back();
         assert!(cube.is_solved());
     }
 
+    fn assert_cube_strings_eq(expected: &str, actual: &str) {
+        assert!(actual == expected,
+                "Expected {} but got {}\n", expected, actual);
+    }
+
     #[test]
     fn test_cube_to_string() {
-        let cube = build_cube();
+        let cube = Cube::new();
         let expected = "
                 ______3_____             ______1_____
                /  y  /  y  /|           /|     |     |
@@ -184,14 +185,12 @@ mod test {
             |  r  |  r  | /          |/  p  /  p  /
             |_____1_____|/           |_____3_____/
 ";
-        assert!(
-            cube.to_string() == expected,
-            "Expected {} but got {}\n", expected, cube);
+        assert_cube_strings_eq(expected, &cube.to_string());
     }
 
     #[test]
     fn test_twisted_cube_to_string() {
-        let mut cube = build_cube();
+        let mut cube = Cube::new();
 
         cube.twist();
 
@@ -214,8 +213,23 @@ mod test {
     }
 
     #[test]
+    fn test_thrice_twisted_same_as_twist_back() {
+        let orig_cube = Cube::new();
+        let mut cube_a = orig_cube;
+        let mut cube_b = orig_cube;
+
+        cube_a.twist();
+        cube_a.twist();
+        cube_a.twist();
+
+        cube_b.twist_back();
+
+        assert_cube_strings_eq(&cube_a.to_string(), &cube_b.to_string());
+    }
+
+    #[test]
     fn test_twice_twisted_cube_to_string() {
-        let mut cube = build_cube();
+        let mut cube = Cube::new();
 
         cube.twist();
         cube.twist();
