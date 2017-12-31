@@ -1,8 +1,4 @@
-use std::fmt::{
-    Display,
-    Formatter,
-    Result as FmtResult,
-};
+use std::fmt::{Display, Formatter, Result as FmtResult};
 
 #[derive(Clone, Copy)]
 pub struct Cube {
@@ -39,17 +35,14 @@ impl Cube {
     }
 
     fn twist_by(&mut self, amount: i8) {
-        self.twists = wrap_index(
-            self.twists as i8 + amount, NUM_COLORS as i8);
+        self.twists = wrap_index(self.twists as i8 + amount, NUM_COLORS as i8);
     }
 
-    fn get_color(&self, face_index: i8) -> &'static str{
+    fn get_color(&self, face_index: i8) -> &'static str {
         // The order of this determines order of the faces.
-        const COLORS: [&str; NUM_COLORS as usize] =
-            ["y", "p", "w", "r"];
+        const COLORS: [&str; NUM_COLORS as usize] = ["y", "p", "w", "r"];
 
-        let color_index = wrap_index(
-            face_index + self.twists as i8, NUM_COLORS as i8);
+        let color_index = wrap_index(face_index + self.twists as i8, NUM_COLORS as i8);
 
         COLORS[color_index as usize]
     }
@@ -58,15 +51,19 @@ impl Cube {
 impl Display for Cube {
     fn fmt(&self, formatter: &mut Formatter) -> FmtResult {
         let top = self.get_color(0);
-        let front_left = if self.turned {"b"} else {"r"};
-        let front_right = if self.turned {"b"} else {self.get_color(3)};
+        let front_left = if self.turned { "b" } else { "r" };
+        let front_right =
+            if self.turned { "b" } else { self.get_color(3) };
         let back_front = self.get_color(2);
-        let back_bottom_right = if self.turned {"g"} else {self.get_color(1)};
-        let back_bottom_left = if self.turned {"g"} else {"p"};
-        let rhs = if self.turned {"p"} else {"b"};
-        let lhs = if self.turned {"r"} else {"g"};
+        let back_bottom_right =
+            if self.turned { "g" } else { self.get_color(1) };
+        let back_bottom_left = if self.turned { "g" } else { "p" };
+        let rhs = if self.turned { "p" } else { "b" };
+        let lhs = if self.turned { "r" } else { "g" };
 
-        write!(formatter, "
+        write!(
+            formatter,
+            "
                 ______3_____             ______1_____
                /  y  /  {}  /|           /|     |     |
               /_____/_____/ |          /{}|  w  |  {}  |
@@ -79,15 +76,27 @@ impl Display for Cube {
             |  {}  |  {}  | /          |/  {}  /  {}  /
             |_____1_____|/           |_____3_____/
 ",
-top,
-lhs, back_front,
-top, rhs,
-lhs,
-rhs, lhs, back_front,
-front_left, front_right, rhs,
-lhs, back_bottom_left, back_bottom_right,
-rhs,
-front_left, front_right, back_bottom_left, back_bottom_right)
+            top,
+            lhs,
+            back_front,
+            top,
+            rhs,
+            lhs,
+            rhs,
+            lhs,
+            back_front,
+            front_left,
+            front_right,
+            rhs,
+            lhs,
+            back_bottom_left,
+            back_bottom_right,
+            rhs,
+            front_left,
+            front_right,
+            back_bottom_left,
+            back_bottom_right
+        )
     }
 }
 
@@ -232,9 +241,7 @@ mod test {
 
         cube_b.twist_back();
 
-        assert_cube_strings_eq(
-            &cube_a.to_string(),
-            &cube_b.to_string());
+        assert_cube_strings_eq(&cube_a.to_string(), &cube_b.to_string());
     }
 
     #[test]
@@ -261,7 +268,11 @@ mod test {
     }
 
     fn assert_cube_strings_eq(expected: &str, actual: &str) {
-        assert!(actual == expected,
-                "Expected {} but got {}\n", expected, actual);
+        assert!(
+            actual == expected,
+            "Expected {} but got {}\n",
+            expected,
+            actual
+        );
     }
 }
