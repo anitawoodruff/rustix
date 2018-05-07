@@ -18,6 +18,7 @@ impl Cube {
         return self.twists == 0;
     }
 
+    /// Rotates the right-hand side of the cube towards the viewer.
     pub fn twist(&mut self) {
         self.twist_by(1);
     }
@@ -26,6 +27,7 @@ impl Cube {
         self.turned = true;
     }
 
+    /// Rotates the right-hand side of the cube away from the viewer.
     pub fn twist_back(&mut self) {
         self.twist_by(-1);
     }
@@ -34,6 +36,7 @@ impl Cube {
         self.turned = false;
     }
 
+    /// Rotates the right-hand side of the cube towards the viewer `amount` times.
     fn twist_by(&mut self, amount: i8) {
         self.twists = wrap_index(self.twists as i8 + amount, NUM_COLORS as i8);
     }
