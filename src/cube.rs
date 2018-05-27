@@ -57,48 +57,33 @@ impl Display for Cube {
         let front_left = if self.turned { "b" } else { "r" };
         let front_right =
             if self.turned { "b" } else { self.get_color(3) };
-        let back_front = self.get_color(2);
-        let back_bottom_right =
-            if self.turned { "g" } else { self.get_color(1) };
-        let back_bottom_left = if self.turned { "g" } else { "p" };
         let rhs = if self.turned { "p" } else { "b" };
-        let lhs = if self.turned { "r" } else { "g" };
 
         write!(
             formatter,
             "
-                ______3_____             ______1_____
-               /  y  /  {}  /|           /|     |     |
-              /_____/_____/ |          /{}|  w  |  {}  |
-             /  y  /  {}  /|{}|         /| |_____|_____|
-            /_____0_____/ | |        |{}|/|     |     |
-            |     |     |{}|/|        | /{}|  w  |  {}  |
-            |  {}  |  {}  | /{}|        |/| |_____2_____|
-            |_____|_____|/| |        |{}|/  {}  /  {}  /
-            |     |     |{}|/         | /_____/_____/
-            |  {}  |  {}  | /          |/  {}  /  {}  /
-            |_____1_____|/           |_____3_____/
+                ____________ 
+               /  y  /  {}  /|
+              /_____/_____/ |
+             /  y  /  {}  /|{}|
+            /_____/_____/ | |
+            |     |     |{}|/|
+            |  {}  |  {}  | /{}|
+            |_____|_____|/| |
+            |     |     |{}|/
+            |  {}  |  {}  | /
+            |_____|_____|/
 ",
             top,
-            lhs,
-            back_front,
             top,
             rhs,
-            lhs,
-            rhs,
-            lhs,
-            back_front,
-            front_left,
-            front_right,
-            rhs,
-            lhs,
-            back_bottom_left,
-            back_bottom_right,
             rhs,
             front_left,
             front_right,
-            back_bottom_left,
-            back_bottom_right
+            rhs,
+            rhs,
+            front_left,
+            front_right
         )
     }
 }
@@ -173,17 +158,17 @@ mod test {
     fn test_cube_to_string() {
         let cube = Cube::new();
         let expected = "
-                ______3_____             ______1_____
-               /  y  /  y  /|           /|     |     |
-              /_____/_____/ |          /g|  w  |  w  |
-             /  y  /  y  /|b|         /| |_____|_____|
-            /_____0_____/ | |        |g|/|     |     |
-            |     |     |b|/|        | /g|  w  |  w  |
-            |  r  |  r  | /b|        |/| |_____2_____|
-            |_____|_____|/| |        |g|/  p  /  p  /
-            |     |     |b|/         | /_____/_____/
-            |  r  |  r  | /          |/  p  /  p  /
-            |_____1_____|/           |_____3_____/
+                ____________ 
+               /  y  /  y  /|
+              /_____/_____/ |
+             /  y  /  y  /|b|
+            /_____/_____/ | |
+            |     |     |b|/|
+            |  r  |  r  | /b|
+            |_____|_____|/| |
+            |     |     |b|/
+            |  r  |  r  | /
+            |_____|_____|/
 ";
         assert_cube_strings_eq(expected, &cube.to_string());
     }
@@ -195,17 +180,17 @@ mod test {
         cube.twist();
 
         let expected = "
-                ______3_____             ______1_____
-               /  y  /  p  /|           /|     |     |
-              /_____/_____/ |          /g|  w  |  r  |
-             /  y  /  p  /|b|         /| |_____|_____|
-            /_____0_____/ | |        |g|/|     |     |
-            |     |     |b|/|        | /g|  w  |  r  |
-            |  r  |  y  | /b|        |/| |_____2_____|
-            |_____|_____|/| |        |g|/  p  /  w  /
-            |     |     |b|/         | /_____/_____/
-            |  r  |  y  | /          |/  p  /  w  /
-            |_____1_____|/           |_____3_____/
+                ____________ 
+               /  y  /  p  /|
+              /_____/_____/ |
+             /  y  /  p  /|b|
+            /_____/_____/ | |
+            |     |     |b|/|
+            |  r  |  y  | /b|
+            |_____|_____|/| |
+            |     |     |b|/
+            |  r  |  y  | /
+            |_____|_____|/
 ";
         assert_cube_strings_eq(expected, &cube.to_string());
     }
@@ -217,17 +202,17 @@ mod test {
         cube.turn();
 
         let expected = "
-                ______3_____             ______1_____
-               /  y  /  y  /|           /|     |     |
-              /_____/_____/ |          /r|  w  |  w  |
-             /  y  /  y  /|p|         /| |_____|_____|
-            /_____0_____/ | |        |r|/|     |     |
-            |     |     |p|/|        | /r|  w  |  w  |
-            |  b  |  b  | /p|        |/| |_____2_____|
-            |_____|_____|/| |        |r|/  g  /  g  /
-            |     |     |p|/         | /_____/_____/
-            |  b  |  b  | /          |/  g  /  g  /
-            |_____1_____|/           |_____3_____/
+                ____________ 
+               /  y  /  y  /|
+              /_____/_____/ |
+             /  y  /  y  /|p|
+            /_____/_____/ | |
+            |     |     |p|/|
+            |  b  |  b  | /p|
+            |_____|_____|/| |
+            |     |     |p|/
+            |  b  |  b  | /
+            |_____|_____|/
 ";
         assert_cube_strings_eq(expected, &cube.to_string());
     }
@@ -255,17 +240,17 @@ mod test {
         cube.twist();
 
         let expected = "
-                ______3_____             ______1_____
-               /  y  /  w  /|           /|     |     |
-              /_____/_____/ |          /g|  w  |  y  |
-             /  y  /  w  /|b|         /| |_____|_____|
-            /_____0_____/ | |        |g|/|     |     |
-            |     |     |b|/|        | /g|  w  |  y  |
-            |  r  |  p  | /b|        |/| |_____2_____|
-            |_____|_____|/| |        |g|/  p  /  r  /
-            |     |     |b|/         | /_____/_____/
-            |  r  |  p  | /          |/  p  /  r  /
-            |_____1_____|/           |_____3_____/
+                ____________ 
+               /  y  /  w  /|
+              /_____/_____/ |
+             /  y  /  w  /|b|
+            /_____/_____/ | |
+            |     |     |b|/|
+            |  r  |  p  | /b|
+            |_____|_____|/| |
+            |     |     |b|/
+            |  r  |  p  | /
+            |_____|_____|/
 ";
         assert_cube_strings_eq(expected, &cube.to_string());
     }

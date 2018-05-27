@@ -1,3 +1,7 @@
+#[macro_use] extern crate text_io;
+
+use std::io::{self, Write};
+
 mod cube;
 use cube::Cube;
 
@@ -15,20 +19,32 @@ fn print_cube_and_solved_status(cube: &Cube) {
 }
 
 fn main() {
-    println!("Hello, world!");
-
     let mut cube = Cube::new();
     print_cube_and_solved_status(&cube);
 
-    cube.twist();
-    print_cube(&cube);
+    loop {
+        print!("Enter a letter (a/d/g/q): ");
+        io::stdout().flush();
 
-    cube.twist();
-    print_cube(&cube);
+        let input: char = read!();
 
-    cube.twist();
-    print_cube_and_solved_status(&cube);
+        println!("You entered: {}", input);
 
-    cube.twist();
-    print_cube_and_solved_status(&cube);
+        match input {
+            'q' => return,
+            'a' => {
+                cube.turn();
+                print_cube_and_solved_status(&cube);
+            }
+            'd' => {
+                cube.turn_back();
+                print_cube_and_solved_status(&cube);
+            }
+            'g' => {
+                cube.twist();
+                print_cube_and_solved_status(&cube);
+            }
+            _ => {}
+        }
+    }
 }
