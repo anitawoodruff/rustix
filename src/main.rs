@@ -23,8 +23,8 @@ fn main() {
     print_cube_and_solved_status(&cube);
 
     loop {
-        print!("Enter a letter (a/d/g/q): ");
-        io::stdout().flush();
+        print!("Enter a letter (a/d/f/g/t/q): ");
+        let _ = io::stdout().flush();
 
         let input: char = read!();
 
@@ -42,6 +42,14 @@ fn main() {
             }
             'g' => {
                 cube.twist();
+                print_cube_and_solved_status(&cube);
+            }
+            't' => {
+                cube.twist_back();
+                print_cube_and_solved_status(&cube);
+            }
+            'f' => {
+                cube.front_twist();
                 print_cube_and_solved_status(&cube);
             }
             _ => {}
