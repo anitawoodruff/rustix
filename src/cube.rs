@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 
 #[derive(Clone, Copy)]
 pub struct Cube {
+    config: [usize; 8],
     turned: bool,
     twists: usize,
 }
@@ -48,19 +49,35 @@ const BLOCKS: [Block; 8] = [
 impl Cube {
     pub fn new() -> Self {
         Cube {
-            //config: [0, 1, 2, 3, 4, 5, 6, 7],
+            config: [0, 1, 2, 3, 4, 5, 6, 7],
             turned: false,
             twists: 0,
         }
     }
 
     pub fn is_solved(&self) -> bool {
-        return self.twists == 0;
+        return self.config == [0, 1, 2, 3, 4, 5, 6, 7];
     }
 
     /// Rotates the right-hand side of the cube towards the viewer.
     pub fn twist(&mut self) {
-        self.twist_by(1);
+        fn transform(posn: usize, config: [usize; 8]) -> usize {
+            match posn {
+                1 => config[3],
+                3 => config[7],
+                5 => config[1],
+                7 => config[5],
+                _ => config[posn],
+            }
+        }
+        let mut nextConfig = [0; 8];
+
+        for posn in 0..8 {
+            nextConfig[posn] = transform(posn, self.config);
+        }
+        self.config = nextConfig;
+
+        self.twists = wrap_index(self.twists as i8 + 1, NUM_COLORS as i8);
     }
 
     pub fn turn(&mut self) {
@@ -69,7 +86,7 @@ impl Cube {
 
     /// Rotates the right-hand side of the cube away from the viewer.
     pub fn twist_back(&mut self) {
-        self.twist_by(-1);
+        self.twist_by(3);
     }
 
     pub fn turn_back(&mut self) {
@@ -78,7 +95,9 @@ impl Cube {
 
     /// Rotates the right-hand side of the cube towards the viewer `amount` times.
     fn twist_by(&mut self, amount: i8) {
-        self.twists = wrap_index(self.twists as i8 + amount, NUM_COLORS as i8);
+        for i in 0..amount {
+            self.twist();
+        }
     }
 
     fn get_color(&self, face_index: i8) -> &'static str {
@@ -103,9 +122,9 @@ impl Display for Cube {
             formatter,
             "
                 ____________ 
-               /  y  /  {}  /|
+               /  {}  /  {}  /|
               /_____/_____/ |
-             /  y  /  {}  /|{}|
+             /  {}  /  {}  /|{}|
             /_____/_____/ | |
             |     |     |{}|/|
             |  {}  |  {}  | /{}|
@@ -114,7 +133,9 @@ impl Display for Cube {
             |  {}  |  {}  | /
             |_____|_____|/
 ",
-            top,
+            BLOCKS[self.config[0]].0,
+            BLOCKS[self.config[1]].2,
+            Y,
             top,
             rhs,
             rhs,
