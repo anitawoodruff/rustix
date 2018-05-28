@@ -6,9 +6,41 @@ pub struct Cube {
     twists: usize,
 }
 
+pub struct Block(char, char, char);
+
+#[derive(Clone, Copy)]
+enum Color {
+    Y, P, B, R, G, W
+}
+
+impl From<Color> for char {
+    fn from(color : Color) -> char {
+        match color {
+            Y => 'y',
+            P => 'p',
+            B => 'b',
+            R => 'r',
+            G => 'g',
+            W => 'w',
+        }
+    }
+}
+
+impl Display for Color {
+    fn fmt(&self, formatter: &mut Formatter) -> FmtResult {
+        write!(formatter, "{}", char::from(*self))
+    }
+}
+
+use self::Color::*;
+
+//const BLOCKS: [Block; 8] = [
+//    Block('y', 'p', 'b'
+
 impl Cube {
     pub fn new() -> Self {
         Cube {
+            //config: [0, 1, 2, 3, 4, 5, 6, 7],
             turned: false,
             twists: 0,
         }
@@ -196,6 +228,29 @@ mod test {
     }
 
     #[test]
+    fn test_twice_twisted_cube_to_string() {
+        let mut cube = Cube::new();
+
+        cube.twist();
+        cube.twist();
+
+        let expected = "
+                ____________ 
+               /  y  /  w  /|
+              /_____/_____/ |
+             /  y  /  w  /|b|
+            /_____/_____/ | |
+            |     |     |b|/|
+            |  r  |  p  | /b|
+            |_____|_____|/| |
+            |     |     |b|/
+            |  r  |  p  | /
+            |_____|_____|/
+";
+        assert_cube_strings_eq(expected, &cube.to_string());
+    }
+
+    #[test]
     fn test_turned_cube_to_string() {
         let mut cube = Cube::new();
 
@@ -218,6 +273,29 @@ mod test {
     }
 
     #[test]
+    fn test_twisted_and_turned_cube_to_string() {
+        let mut cube = Cube::new();
+
+        cube.twist();
+        cube.turn();
+
+        let expected = "
+                ____________ 
+               /  y  /  y  /|
+              /_____/_____/ |
+             /  p  /  p  /|g|
+            /_____/_____/ | |
+            |     |     |g|/|
+            |  b  |  b  | /g|
+            |_____|_____|/| |
+            |     |     |g|/
+            |  b  |  b  | /
+            |_____|_____|/
+";
+        assert_cube_strings_eq(expected, &cube.to_string());
+    }
+
+    #[test]
     fn test_thrice_twisted_to_string_same_as_twist_back() {
         let orig_cube = Cube::new();
         let mut cube_a = orig_cube;
@@ -230,29 +308,6 @@ mod test {
         cube_b.twist_back();
 
         assert_cube_strings_eq(&cube_a.to_string(), &cube_b.to_string());
-    }
-
-    #[test]
-    fn test_twice_twisted_cube_to_string() {
-        let mut cube = Cube::new();
-
-        cube.twist();
-        cube.twist();
-
-        let expected = "
-                ____________ 
-               /  y  /  w  /|
-              /_____/_____/ |
-             /  y  /  w  /|b|
-            /_____/_____/ | |
-            |     |     |b|/|
-            |  r  |  p  | /b|
-            |_____|_____|/| |
-            |     |     |b|/
-            |  r  |  p  | /
-            |_____|_____|/
-";
-        assert_cube_strings_eq(expected, &cube.to_string());
     }
 
     fn assert_cube_strings_eq(expected: &str, actual: &str) {
