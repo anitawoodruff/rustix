@@ -63,10 +63,10 @@ impl Cube {
     pub fn twist(&mut self) {
         fn transform(posn: usize, config: [usize; 8]) -> usize {
             match posn {
-                1 => config[3],
-                3 => config[7],
-                5 => config[1],
-                7 => config[5],
+                1 => config[5],
+                3 => config[1],
+                5 => config[7],
+                7 => config[3],
                 _ => config[posn],
             }
         }
@@ -75,6 +75,7 @@ impl Cube {
         for posn in 0..8 {
             nextConfig[posn] = transform(posn, self.config);
         }
+
         self.config = nextConfig;
 
         self.twists = wrap_index(self.twists as i8 + 1, NUM_COLORS as i8);
@@ -108,6 +109,42 @@ impl Cube {
 
         COLORS[color_index as usize]
     }
+
+    fn color_at(&self, face_index: i8) -> Color {
+        if self.turned {
+            match face_index {
+                0 => BLOCKS[self.config[2]].1,
+                1 => BLOCKS[self.config[0]].0,
+                2 => BLOCKS[self.config[3]].2,
+                3 => BLOCKS[self.config[1]].0,
+                4 => BLOCKS[self.config[0]].1,
+                5 => BLOCKS[self.config[1]].2,
+                6 => BLOCKS[self.config[3]].1,
+                7 => BLOCKS[self.config[1]].1,
+                8 => BLOCKS[self.config[4]].1,
+                9 => BLOCKS[self.config[5]].0,
+                10 => BLOCKS[self.config[7]].1,
+                11 => BLOCKS[self.config[5]].1,
+                _ => W
+            }
+        } else {
+            match face_index {
+                0 => BLOCKS[self.config[0]].0,
+                1 => BLOCKS[self.config[1]].0,
+                2 => BLOCKS[self.config[2]].1,
+                3 => BLOCKS[self.config[3]].2,
+                4 => BLOCKS[self.config[1]].1,
+                5 => BLOCKS[self.config[3]].1,
+                6 => BLOCKS[self.config[2]].0,
+                7 => BLOCKS[self.config[3]].0,
+                8 => BLOCKS[self.config[5]].1,
+                9 => BLOCKS[self.config[7]].1,
+                10 => BLOCKS[self.config[6]].0,
+                11 => BLOCKS[self.config[7]].2,
+                _ => W
+            }
+        }
+    }
 }
 
 impl Display for Cube {
@@ -122,29 +159,29 @@ impl Display for Cube {
             formatter,
             "
                 ____________ 
-               /  {}  /  {}  /|
+               /  {0}  /  {1}  /|
               /_____/_____/ |
-             /  {}  /  {}  /|{}|
+             /  {2}  /  {3}  /|{4}|
             /_____/_____/ | |
-            |     |     |{}|/|
-            |  {}  |  {}  | /{}|
+            |     |     |{5}|/|
+            |  {6}  |  {7}  | /{8}|
             |_____|_____|/| |
-            |     |     |{}|/
-            |  {}  |  {}  | /
+            |     |     |{9}|/
+            |  {10}  |  {11}  | /
             |_____|_____|/
 ",
-            BLOCKS[self.config[0]].0,
-            BLOCKS[self.config[1]].2,
-            Y,
-            top,
-            rhs,
-            rhs,
-            front_left,
-            front_right,
-            rhs,
-            rhs,
-            front_left,
-            front_right
+            self.color_at(0),
+            self.color_at(1),
+            self.color_at(2),
+            self.color_at(3),
+            self.color_at(4),
+            self.color_at(5),
+            self.color_at(6),
+            self.color_at(7),
+            self.color_at(8),
+            self.color_at(9),
+            self.color_at(10),
+            self.color_at(11),
         )
     }
 }
@@ -235,28 +272,6 @@ mod test {
     }
 
     #[test]
-    fn test_twisted_cube_to_string() {
-        let mut cube = Cube::new();
-
-        cube.twist();
-
-        let expected = "
-                ____________ 
-               /  y  /  p  /|
-              /_____/_____/ |
-             /  y  /  p  /|b|
-            /_____/_____/ | |
-            |     |     |b|/|
-            |  r  |  y  | /b|
-            |_____|_____|/| |
-            |     |     |b|/
-            |  r  |  y  | /
-            |_____|_____|/
-";
-        assert_cube_strings_eq(expected, &cube.to_string());
-    }
-
-    #[test]
     fn test_twice_twisted_cube_to_string() {
         let mut cube = Cube::new();
 
@@ -302,6 +317,28 @@ mod test {
     }
 
     #[test]
+    fn test_twisted_cube_to_string() {
+        let mut cube = Cube::new();
+
+        cube.twist();
+
+        let expected = "
+                ____________ 
+               /  y  /  p  /|
+              /_____/_____/ |
+             /  y  /  p  /|b|
+            /_____/_____/ | |
+            |     |     |b|/|
+            |  r  |  y  | /b|
+            |_____|_____|/| |
+            |     |     |b|/
+            |  r  |  y  | /
+            |_____|_____|/
+";
+        assert_cube_strings_eq(expected, &cube.to_string());
+    }
+
+    #[test]
     fn test_twisted_and_turned_cube_to_string() {
         let mut cube = Cube::new();
 
@@ -312,12 +349,12 @@ mod test {
                 ____________ 
                /  y  /  y  /|
               /_____/_____/ |
-             /  p  /  p  /|g|
+             /  p  /  p  /|p|
             /_____/_____/ | |
-            |     |     |g|/|
-            |  b  |  b  | /g|
+            |     |     |w|/|
+            |  b  |  b  | /p|
             |_____|_____|/| |
-            |     |     |g|/
+            |     |     |w|/
             |  b  |  b  | /
             |_____|_____|/
 ";
