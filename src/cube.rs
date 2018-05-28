@@ -6,7 +6,7 @@ pub struct Cube {
     twists: usize,
 }
 
-pub struct Block(char, char, char);
+pub struct Block(Color, Color, Color);
 
 #[derive(Clone, Copy)]
 enum Color {
@@ -34,8 +34,16 @@ impl Display for Color {
 
 use self::Color::*;
 
-//const BLOCKS: [Block; 8] = [
-//    Block('y', 'p', 'b'
+const BLOCKS: [Block; 8] = [
+    Block(Y, P, G), // 0
+    Block(Y, B, P), // 1
+    Block(R, Y, G), // 2
+    Block(R, B, Y), // 3
+    Block(G, P, W), // 4
+    Block(P, B, W), // 5
+    Block(R, G, W), // 6
+    Block(W, B, R), // 7
+];
 
 impl Cube {
     pub fn new() -> Self {
