@@ -2,7 +2,6 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Cube {
-    turned: bool,
     blocks: [Block; 8],
 }
 
@@ -13,20 +12,31 @@ pub struct Block {
     lhs: Color,
     rhs: Color,
     front: Color,
-    back: Color
+    back: Color,
 }
 
-const BLOCK_X : Block = Block {
-    top: X, bottom: X, front: X, back: X, lhs: X, rhs: X
+const BLOCK_X: Block = Block {
+    top: X,
+    bottom: X,
+    front: X,
+    back: X,
+    lhs: X,
+    rhs: X,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum Color {
-    Y, P, B, R, G, W, X
+    Y,
+    P,
+    B,
+    R,
+    G,
+    W,
+    X,
 }
 
 impl From<Color> for char {
-    fn from(color : Color) -> char {
+    fn from(color: Color) -> char {
         match color {
             Y => 'y',
             P => 'p',
@@ -48,22 +58,59 @@ impl Display for Color {
 use self::Color::*;
 
 const BLOCKS: [Block; 8] = [
-    Block { top: Y, back: P, lhs: G, .. BLOCK_X }, // 0
-    Block { top: Y, back: P, rhs: B, .. BLOCK_X }, // 1
-    Block { top: Y, front: R, lhs: G, .. BLOCK_X }, // 2
-    Block { top: Y, front: R, rhs: B, .. BLOCK_X }, // 3
-    Block { bottom: W, back: P, lhs: G, .. BLOCK_X}, // 4
-    Block { bottom: W, back: P, rhs: B, .. BLOCK_X}, // 5
-    Block { bottom: W, front: R, lhs: G, .. BLOCK_X}, // 6
-    Block { bottom: W, front: R, rhs: B, .. BLOCK_X}, // 7
+    Block {
+        top: Y,
+        back: P,
+        lhs: G,
+        ..BLOCK_X
+    }, // 0
+    Block {
+        top: Y,
+        back: P,
+        rhs: B,
+        ..BLOCK_X
+    }, // 1
+    Block {
+        top: Y,
+        front: R,
+        lhs: G,
+        ..BLOCK_X
+    }, // 2
+    Block {
+        top: Y,
+        front: R,
+        rhs: B,
+        ..BLOCK_X
+    }, // 3
+    Block {
+        bottom: W,
+        back: P,
+        lhs: G,
+        ..BLOCK_X
+    }, // 4
+    Block {
+        bottom: W,
+        back: P,
+        rhs: B,
+        ..BLOCK_X
+    }, // 5
+    Block {
+        bottom: W,
+        front: R,
+        lhs: G,
+        ..BLOCK_X
+    }, // 6
+    Block {
+        bottom: W,
+        front: R,
+        rhs: B,
+        ..BLOCK_X
+    }, // 7
 ];
 
 impl Cube {
     pub fn new() -> Self {
-        Cube {
-            blocks: BLOCKS,
-            turned: false,
-        }
+        Cube { blocks: BLOCKS }
     }
 
     pub fn is_solved(&self) -> bool {
@@ -84,10 +131,30 @@ impl Cube {
         fn get_block_after_twist(posn: usize, blocks: [Block; 8]) -> Block {
             let old = blocks[pretwist_posn(posn)];
             match posn {
-                1 => Block { top: old.back, back: old.bottom, rhs: old.rhs, .. BLOCK_X },
-                3 => Block { top: old.back, front: old.top, rhs: old.rhs, .. BLOCK_X },
-                5 => Block { bottom: old.front, back: old.bottom, rhs: old.rhs, .. BLOCK_X },
-                7 => Block { bottom: old.front, front: old.top, rhs: old.rhs, .. BLOCK_X },
+                1 => Block {
+                    top: old.back,
+                    back: old.bottom,
+                    rhs: old.rhs,
+                    ..BLOCK_X
+                },
+                3 => Block {
+                    top: old.back,
+                    front: old.top,
+                    rhs: old.rhs,
+                    ..BLOCK_X
+                },
+                5 => Block {
+                    bottom: old.front,
+                    back: old.bottom,
+                    rhs: old.rhs,
+                    ..BLOCK_X
+                },
+                7 => Block {
+                    bottom: old.front,
+                    front: old.top,
+                    rhs: old.rhs,
+                    ..BLOCK_X
+                },
                 _ => old,
             }
         }
@@ -114,10 +181,30 @@ impl Cube {
         fn get_block_after_twist(posn: usize, blocks: [Block; 8]) -> Block {
             let old = blocks[pretwist_posn(posn)];
             match posn {
-                2 => Block { top: old.lhs, lhs: old.bottom, front: old.front, .. BLOCK_X},
-                3 => Block { top: old.lhs, rhs: old.top, front: old.front, .. BLOCK_X},
-                6 => Block { bottom: old.rhs, lhs: old.bottom, front: old.front, .. BLOCK_X},
-                7 => Block { bottom: old.rhs, rhs: old.top, front: old.front, .. BLOCK_X},
+                2 => Block {
+                    top: old.lhs,
+                    lhs: old.bottom,
+                    front: old.front,
+                    ..BLOCK_X
+                },
+                3 => Block {
+                    top: old.lhs,
+                    rhs: old.top,
+                    front: old.front,
+                    ..BLOCK_X
+                },
+                6 => Block {
+                    bottom: old.rhs,
+                    lhs: old.bottom,
+                    front: old.front,
+                    ..BLOCK_X
+                },
+                7 => Block {
+                    bottom: old.rhs,
+                    rhs: old.top,
+                    front: old.front,
+                    ..BLOCK_X
+                },
                 _ => old,
             }
         }
@@ -131,8 +218,58 @@ impl Cube {
         self.blocks = next_blocks;
     }
 
+    /// Turns the cube to the left so the rhs now faces to the front.
     pub fn turn(&mut self) {
-        self.turned = true;
+        fn preturn_posn(posn: usize) -> usize {
+            match posn {
+                0 => 2,
+                1 => 0,
+                2 => 3,
+                3 => 1,
+                4 => 6,
+                5 => 4,
+                6 => 7,
+                7 => 5,
+                _ => posn,
+            }
+        }
+        fn get_block_after_turn(posn: usize, blocks: [Block; 8]) -> Block {
+            let old = blocks[preturn_posn(posn)];
+            match posn {
+                0 | 4 => Block {
+                    lhs: old.front,
+                    back: old.lhs,
+                    front: X,
+                    ..old
+                },
+                1 | 5 => Block {
+                    back: old.lhs,
+                    rhs: old.back,
+                    lhs: X,
+                    ..old
+                },
+                2 | 6 => Block {
+                    front: old.rhs,
+                    lhs: old.front,
+                    rhs: X,
+                    ..old
+                },
+                3 | 7 => Block {
+                    front: old.rhs,
+                    rhs: old.back,
+                    back: X,
+                    ..old
+                },
+                _ => old,
+            }
+        }
+        let mut next_blocks = self.blocks;
+
+        for posn in 0..8 {
+            next_blocks[posn] = get_block_after_turn(posn, self.blocks);
+        }
+
+        self.blocks = next_blocks;
     }
 
     /// Rotates the right-hand side of the cube away from the viewer.
@@ -141,7 +278,9 @@ impl Cube {
     }
 
     pub fn turn_back(&mut self) {
-        self.turned = false;
+        self.turn();
+        self.turn();
+        self.turn();
     }
 
     /// Rotates the right-hand side of the cube towards the viewer `amount` times.
@@ -152,38 +291,20 @@ impl Cube {
     }
 
     fn color_at(&self, face_index: i8) -> Color {
-        if self.turned {
-            match face_index {
-                0 => self.blocks[2].top,
-                1 => self.blocks[0].top,
-                2 => self.blocks[3].top,
-                3 => self.blocks[1].top,
-                4 => self.blocks[0].back,
-                5 => self.blocks[1].back,
-                6 => self.blocks[3].rhs,
-                7 => self.blocks[1].rhs,
-                8 => self.blocks[4].back,
-                9 => self.blocks[5].back,
-                10 => self.blocks[7].rhs,
-                11 => self.blocks[5].rhs,
-                _ => W
-            }
-        } else {
-            match face_index {
-                0 => self.blocks[0].top,
-                1 => self.blocks[1].top,
-                2 => self.blocks[2].top,
-                3 => self.blocks[3].top,
-                4 => self.blocks[1].rhs,
-                5 => self.blocks[3].rhs,
-                6 => self.blocks[2].front,
-                7 => self.blocks[3].front,
-                8 => self.blocks[5].rhs,
-                9 => self.blocks[7].rhs,
-                10 => self.blocks[6].front,
-                11 => self.blocks[7].front,
-                _ => W
-            }
+        match face_index {
+            0 => self.blocks[0].top,
+            1 => self.blocks[1].top,
+            2 => self.blocks[2].top,
+            3 => self.blocks[3].top,
+            4 => self.blocks[1].rhs,
+            5 => self.blocks[3].rhs,
+            6 => self.blocks[2].front,
+            7 => self.blocks[3].front,
+            8 => self.blocks[5].rhs,
+            9 => self.blocks[7].rhs,
+            10 => self.blocks[6].front,
+            11 => self.blocks[7].front,
+            _ => W,
         }
     }
 }
@@ -193,7 +314,7 @@ impl Display for Cube {
         write!(
             formatter,
             "
-                ____________ 
+                ____________
                /  {0}  /  {1}  /|
               /_____/_____/ |
              /  {2}  /  {3}  /|{4}|
@@ -295,7 +416,7 @@ mod test {
     fn test_cube_to_string() {
         let cube = Cube::new();
         let expected = "
-                ____________ 
+                ____________
                /  y  /  y  /|
               /_____/_____/ |
              /  y  /  y  /|b|
@@ -315,7 +436,7 @@ mod test {
         let mut cube = Cube::new();
         cube.front_twist();
         let expected = "
-                ____________ 
+                ____________
                /  y  /  y  /|
               /_____/_____/ |
              /  g  /  g  /|b|
@@ -338,7 +459,7 @@ mod test {
         cube.twist();
 
         let expected = "
-                ____________ 
+                ____________
                /  y  /  w  /|
               /_____/_____/ |
              /  y  /  w  /|b|
@@ -354,35 +475,13 @@ mod test {
     }
 
     #[test]
-    fn test_turned_cube_to_string() {
-        let mut cube = Cube::new();
-
-        cube.turn();
-
-        let expected = "
-                ____________ 
-               /  y  /  y  /|
-              /_____/_____/ |
-             /  y  /  y  /|p|
-            /_____/_____/ | |
-            |     |     |p|/|
-            |  b  |  b  | /p|
-            |_____|_____|/| |
-            |     |     |p|/
-            |  b  |  b  | /
-            |_____|_____|/
-";
-        assert_cube_strings_eq(expected, &cube.to_string());
-    }
-
-    #[test]
     fn test_twisted_cube_to_string() {
         let mut cube = Cube::new();
 
         cube.twist();
 
         let expected = "
-                ____________ 
+                ____________
                /  y  /  p  /|
               /_____/_____/ |
              /  y  /  p  /|b|
@@ -398,14 +497,14 @@ mod test {
     }
 
     #[test]
-    fn test_twisted_and_turned_cube_to_string() {
+    fn test_twist_then_turn_to_string() {
         let mut cube = Cube::new();
 
         cube.twist();
         cube.turn();
 
         let expected = "
-                ____________ 
+                ____________
                /  y  /  y  /|
               /_____/_____/ |
              /  p  /  p  /|p|
@@ -420,6 +519,50 @@ mod test {
         assert_cube_strings_eq(expected, &cube.to_string());
     }
 
+    #[test]
+    fn test_turned_cube_to_string() {
+        let mut cube = Cube::new();
+
+        cube.turn();
+
+        let expected = "
+                ____________
+               /  y  /  y  /|
+              /_____/_____/ |
+             /  y  /  y  /|p|
+            /_____/_____/ | |
+            |     |     |p|/|
+            |  b  |  b  | /p|
+            |_____|_____|/| |
+            |     |     |p|/
+            |  b  |  b  | /
+            |_____|_____|/
+";
+        assert_cube_strings_eq(expected, &cube.to_string());
+    }
+
+    #[test]
+    fn test_turn_then_twist_to_string() {
+        let mut cube = Cube::new();
+
+        cube.turn();
+        cube.twist();
+
+        let expected = "
+                ____________
+               /  y  /  g  /|
+              /_____/_____/ |
+             /  y  /  g  /|p|
+            /_____/_____/ | |
+            |     |     |p|/|
+            |  b  |  y  | /p|
+            |_____|_____|/| |
+            |     |     |p|/
+            |  b  |  y  | /
+            |_____|_____|/
+";
+        assert_cube_strings_eq(expected, &cube.to_string());
+    }
     #[test]
     fn test_thrice_twisted_to_string_same_as_twist_back() {
         let orig_cube = Cube::new();
