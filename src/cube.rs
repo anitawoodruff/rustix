@@ -114,7 +114,14 @@ impl Cube {
     }
 
     pub fn is_solved(&self) -> bool {
-        return self.blocks == BLOCKS;
+        bool solved = self.blocks == BLOCKS;
+        if solved {
+            return true;
+        }
+        self.twist();
+        solved = self.blocks == BLOCKS;
+        self.twist_back();
+        return solved;
     }
 
     /// Rotates the right-hand side of the cube towards the viewer.
