@@ -31,7 +31,7 @@ fn main() {
     print_cube_and_solved_status(&mut cube);
 
     loop {
-        print!("Enter a letter (w/a/s/d/f/g/t/x/c/q): ");
+        print!("Enter a letter (w/a/s/d/f/r/g/t/x/c/q): ");
         let _ = io::stdout().flush();
 
         let input: char = read!();
@@ -47,6 +47,7 @@ fn main() {
             'g' => cube.twist(),
             't' => cube.twist_back(),
             'f' => cube.front_twist(),
+            'r' => cube.front_twist_back(),
             'x' => cube.bottom_twist_back(),
             'c' => cube.bottom_twist(),
             _ => {}
