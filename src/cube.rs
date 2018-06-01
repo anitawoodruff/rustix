@@ -108,19 +108,49 @@ const BLOCKS: [Block; 8] = [
     }, // 7
 ];
 
+impl Block {
+    pub fn tip_back(&mut self) -> Block {
+        Block {
+            bottom: self.back,
+            front: self.bottom,
+            top: self.front,
+            back: self.top,
+            lhs: self.lhs,
+            rhs: self.rhs,
+        }
+    }
+    // rotates the cube to the right so that the lhs is now facing front.
+    pub fn turn_right(&mut self) -> Block {
+        Block {
+            bottom: self.bottom,
+            front: self.lhs,
+            top: self.top,
+            back: self.rhs,
+            lhs: self.back,
+            rhs: self.front,
+        }
+    }
+}
+
 impl Cube {
     pub fn new() -> Self {
         Cube { blocks: BLOCKS }
     }
 
-    pub fn is_solved(&self) -> bool {
-        bool solved = self.blocks == BLOCKS;
+    pub fn is_solved(&mut self) -> bool {
+        let mut solved = self.blocks == BLOCKS;
         if solved {
             return true;
         }
-        self.twist();
+        self.turn();
         solved = self.blocks == BLOCKS;
-        self.twist_back();
+        self.turn_back();
+        if solved {
+            return true;
+        }
+        self.turn_back();
+        solved = self.blocks == BLOCKS;
+        self.turn();
         return solved;
     }
 
@@ -174,6 +204,30 @@ impl Cube {
         self.blocks = next_blocks;
     }
 
+    pub fn bottom_twist_back(&mut self) {
+        for _ in 0..3 {
+            self.bottom_twist();
+        }
+    }
+
+    /// Rotates the bottom of the cube to the right.
+    pub fn bottom_twist(&mut self) {
+        fn next_posn(posn: usize) -> usize {
+            match posn {
+                4 => 6,
+                5 => 4,
+                6 => 7,
+                7 => 5,
+                _ => posn,
+            }
+        }
+
+        let mut next_blocks = self.blocks;
+        for posn in 4..8 {
+            next_blocks[next_posn(posn)] = self.blocks[posn].turn_right();
+        }
+        self.blocks = next_blocks;
+    }
     /// Rotates the front of the cube clockwise.
     pub fn front_twist(&mut self) {
         fn pretwist_posn(posn: usize) -> usize {
@@ -223,6 +277,36 @@ impl Cube {
         }
 
         self.blocks = next_blocks;
+    }
+
+    /// Tips the cube away from the viewer.
+    pub fn tip_back(&mut self) {
+        fn next_posn(posn: usize) -> usize {
+            match posn {
+                0 => 4,
+                1 => 5,
+                2 => 0,
+                3 => 1,
+                4 => 6,
+                5 => 7,
+                6 => 2,
+                7 => 3,
+                _ => panic!("posn outside of 0..7"),
+            }
+        }
+
+        let mut next_blocks = self.blocks;
+        for posn in 0..8 {
+            next_blocks[next_posn(posn)] = self.blocks[posn].tip_back();
+        }
+        self.blocks = next_blocks;
+    }
+
+    /// Tips the cube towars the viewer.
+    pub fn tip_forwards(&mut self) {
+        self.tip_back();
+        self.tip_back();
+        self.tip_back();
     }
 
     /// Turns the cube to the left so the rhs now faces to the front.
@@ -356,7 +440,7 @@ mod test {
 
     #[test]
     fn test_new_cube_is_solved() {
-        let cube = Cube::new();
+        let mut cube = Cube::new();
         assert!(cube.is_solved());
     }
 
@@ -421,7 +505,7 @@ mod test {
 
     #[test]
     fn test_cube_to_string() {
-        let cube = Cube::new();
+        let mut cube = Cube::new();
         let expected = "
                 ____________
                /  y  /  y  /|
@@ -433,6 +517,46 @@ mod test {
             |_____|_____|/| |
             |     |     |b|/
             |  r  |  r  | /
+            |_____|_____|/
+";
+        assert_cube_strings_eq(expected, &cube.to_string());
+    }
+
+    #[test]
+    fn test_bottom_twist_to_string() {
+        let mut cube = Cube::new();
+        cube.bottom_twist();
+        let expected = "
+                ____________
+               /  y  /  y  /|
+              /_____/_____/ |
+             /  y  /  y  /|b|
+            /_____/_____/ | |
+            |     |     |b|/|
+            |  r  |  r  | /r|
+            |_____|_____|/| |
+            |     |     |r|/
+            |  g  |  g  | /
+            |_____|_____|/
+";
+        assert_cube_strings_eq(expected, &cube.to_string());
+    }
+
+    #[test]
+    fn test_tip_back_to_string() {
+        let mut cube = Cube::new();
+        cube.tip_back();
+        let expected = "
+                ____________
+               /  r  /  r  /|
+              /_____/_____/ |
+             /  r  /  r  /|b|
+            /_____/_____/ | |
+            |     |     |b|/|
+            |  w  |  w  | /b|
+            |_____|_____|/| |
+            |     |     |b|/
+            |  w  |  w  | /
             |_____|_____|/
 ";
         assert_cube_strings_eq(expected, &cube.to_string());

@@ -1,4 +1,5 @@
-#[macro_use] extern crate text_io;
+#[macro_use]
+extern crate text_io;
 
 use std::io::{self, Write};
 
@@ -9,21 +10,28 @@ fn print_cube(cube: &Cube) {
     println!("{}", cube);
 }
 
-fn print_solved_status(cube: &Cube) {
-    println!("{}", if cube.is_solved() {" SOLVED ! "} else { " Not solved yet..."});
+fn print_solved_status(cube: &mut Cube) {
+    println!(
+        "{}",
+        if cube.is_solved() {
+            " SOLVED ! "
+        } else {
+            " Not solved yet..."
+        }
+    );
 }
 
-fn print_cube_and_solved_status(cube: &Cube) {
-    print_cube(&cube);
-    print_solved_status(&cube);
+fn print_cube_and_solved_status(cube: &mut Cube) {
+    print_cube(cube);
+    print_solved_status(cube);
 }
 
 fn main() {
     let mut cube = Cube::new();
-    print_cube_and_solved_status(&cube);
+    print_cube_and_solved_status(&mut cube);
 
     loop {
-        print!("Enter a letter (a/d/f/g/t/q): ");
+        print!("Enter a letter (w/a/s/d/f/g/t/x/c/q): ");
         let _ = io::stdout().flush();
 
         let input: char = read!();
@@ -32,27 +40,17 @@ fn main() {
 
         match input {
             'q' => return,
-            'a' => {
-                cube.turn();
-                print_cube_and_solved_status(&cube);
-            }
-            'd' => {
-                cube.turn_back();
-                print_cube_and_solved_status(&cube);
-            }
-            'g' => {
-                cube.twist();
-                print_cube_and_solved_status(&cube);
-            }
-            't' => {
-                cube.twist_back();
-                print_cube_and_solved_status(&cube);
-            }
-            'f' => {
-                cube.front_twist();
-                print_cube_and_solved_status(&cube);
-            }
+            'w' => cube.tip_back(),
+            'a' => cube.turn(),
+            's' => cube.tip_forwards(),
+            'd' => cube.turn_back(),
+            'g' => cube.twist(),
+            't' => cube.twist_back(),
+            'f' => cube.front_twist(),
+            'x' => cube.bottom_twist_back(),
+            'c' => cube.bottom_twist(),
             _ => {}
         }
+        print_cube_and_solved_status(&mut cube);
     }
 }
