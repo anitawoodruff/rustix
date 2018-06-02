@@ -47,7 +47,7 @@ fn main() {
             'g' => cube.twist(),
             't' => cube.twist_back(),
             'f' => cube.front_twist(),
-            'r' => cube.front_twist_back(),
+            'r' => cube.undo_front_twist(),
             'x' => cube.bottom_twist_back(),
             'c' => cube.bottom_twist(),
             _ => {}

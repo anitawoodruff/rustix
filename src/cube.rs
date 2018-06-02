@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Cube {
     blocks: [Block; 8],
 }
@@ -119,6 +119,9 @@ impl Block {
             rhs: self.rhs,
         }
     }
+    pub fn tip_forwards(&mut self) -> Block {
+        return self.tip_back().tip_back().tip_back();
+    }
     // rotates the cube to the right so that the lhs is now facing front.
     pub fn turn_right(&mut self) -> Block {
         Block {
@@ -130,6 +133,10 @@ impl Block {
             rhs: self.front,
         }
     }
+
+    pub fn turn_left(&mut self) -> Block {
+        return self.turn_right().turn_right().turn_right();
+    }
 }
 
 impl Cube {
@@ -137,21 +144,29 @@ impl Cube {
         Cube { blocks: BLOCKS }
     }
 
-    pub fn is_solved(&mut self) -> bool {
-        let mut solved = self.blocks == BLOCKS;
-        if solved {
-            return true;
+    pub fn is_solved(&self) -> bool {
+        let mut test = *self;
+        for _ in 0..4 {
+            for _ in 0..4 {
+                if test.blocks == BLOCKS {
+                    return true;
+                }
+                test.turn();
+            }
+            test.tip_back();
         }
-        self.turn();
-        solved = self.blocks == BLOCKS;
-        self.turn_back();
-        if solved {
-            return true;
+        // ugly hack because otherwise some positions
+        // get left out; this could be more efficient:
+        for _ in 0..4 {
+            for _ in 0..4 {
+                if test.blocks == BLOCKS {
+                    return true;
+                }
+                test.tip_back();
+            }
+            test.turn();
         }
-        self.turn_back();
-        solved = self.blocks == BLOCKS;
-        self.turn();
-        return solved;
+        return false;
     }
 
     /// Rotates the right-hand side of the cube towards the viewer.
@@ -165,40 +180,10 @@ impl Cube {
                 _ => posn,
             }
         }
-        fn get_block_after_twist(posn: usize, blocks: [Block; 8]) -> Block {
-            let old = blocks[pretwist_posn(posn)];
-            match posn {
-                1 => Block {
-                    top: old.back,
-                    back: old.bottom,
-                    rhs: old.rhs,
-                    ..BLOCK_X
-                },
-                3 => Block {
-                    top: old.back,
-                    front: old.top,
-                    rhs: old.rhs,
-                    ..BLOCK_X
-                },
-                5 => Block {
-                    bottom: old.front,
-                    back: old.bottom,
-                    rhs: old.rhs,
-                    ..BLOCK_X
-                },
-                7 => Block {
-                    bottom: old.front,
-                    front: old.top,
-                    rhs: old.rhs,
-                    ..BLOCK_X
-                },
-                _ => old,
-            }
-        }
         let mut next_blocks = self.blocks;
 
-        for posn in 0..8 {
-            next_blocks[posn] = get_block_after_twist(posn, self.blocks);
+        for &posn in &[1, 3, 5, 7] {
+            next_blocks[posn] = self.blocks[pretwist_posn(posn)].tip_forwards();
         }
 
         self.blocks = next_blocks;
@@ -221,85 +206,35 @@ impl Cube {
                 _ => posn,
             }
         }
-
         let mut next_blocks = self.blocks;
         for posn in 4..8 {
             next_blocks[next_posn(posn)] = self.blocks[posn].turn_right();
         }
         self.blocks = next_blocks;
     }
+
+    /// Rotates the front of the cube counter clockwise.
+    pub fn undo_front_twist(&mut self) {
+        self.front_twist();
+        self.front_twist();
+        self.front_twist();
+    }
+
     /// Rotates the front of the cube clockwise.
     pub fn front_twist(&mut self) {
-        fn pretwist_posn(posn: usize) -> usize {
-            match posn {
-                2 => 6,
-                3 => 2,
-                6 => 7,
-                7 => 3,
-                _ => posn,
-            }
-        }
-        fn get_block_after_twist(posn: usize, blocks: [Block; 8]) -> Block {
-            let old = blocks[pretwist_posn(posn)];
-            match posn {
-                2 => Block {
-                    top: old.lhs,
-                    lhs: old.bottom,
-                    front: old.front,
-                    ..BLOCK_X
-                },
-                3 => Block {
-                    top: old.lhs,
-                    rhs: old.top,
-                    front: old.front,
-                    ..BLOCK_X
-                },
-                6 => Block {
-                    bottom: old.rhs,
-                    lhs: old.bottom,
-                    front: old.front,
-                    ..BLOCK_X
-                },
-                7 => Block {
-                    bottom: old.rhs,
-                    rhs: old.top,
-                    front: old.front,
-                    ..BLOCK_X
-                },
-                _ => old,
-            }
-        }
-
-        let mut next_blocks = self.blocks;
-
-        for posn in 0..8 {
-            next_blocks[posn] = get_block_after_twist(posn, self.blocks);
-        }
-
-        self.blocks = next_blocks;
+        self.turn_back();
+        self.twist_back();
+        self.turn();
     }
 
     /// Tips the cube away from the viewer.
     pub fn tip_back(&mut self) {
-        fn next_posn(posn: usize) -> usize {
-            match posn {
-                0 => 4,
-                1 => 5,
-                2 => 0,
-                3 => 1,
-                4 => 6,
-                5 => 7,
-                6 => 2,
-                7 => 3,
-                _ => panic!("posn outside of 0..7"),
-            }
-        }
-
-        let mut next_blocks = self.blocks;
-        for posn in 0..8 {
-            next_blocks[next_posn(posn)] = self.blocks[posn].tip_back();
-        }
-        self.blocks = next_blocks;
+        self.twist_back();
+        self.turn();
+        self.turn();
+        self.twist();
+        self.turn();
+        self.turn();
     }
 
     /// Tips the cube towars the viewer.
@@ -324,40 +259,10 @@ impl Cube {
                 _ => posn,
             }
         }
-        fn get_block_after_turn(posn: usize, blocks: [Block; 8]) -> Block {
-            let old = blocks[preturn_posn(posn)];
-            match posn {
-                0 | 4 => Block {
-                    lhs: old.front,
-                    back: old.lhs,
-                    front: X,
-                    ..old
-                },
-                1 | 5 => Block {
-                    back: old.lhs,
-                    rhs: old.back,
-                    lhs: X,
-                    ..old
-                },
-                2 | 6 => Block {
-                    front: old.rhs,
-                    lhs: old.front,
-                    rhs: X,
-                    ..old
-                },
-                3 | 7 => Block {
-                    front: old.rhs,
-                    rhs: old.back,
-                    back: X,
-                    ..old
-                },
-                _ => old,
-            }
-        }
         let mut next_blocks = self.blocks;
 
         for posn in 0..8 {
-            next_blocks[posn] = get_block_after_turn(posn, self.blocks);
+            next_blocks[posn] = self.blocks[preturn_posn(posn)].turn_left();
         }
 
         self.blocks = next_blocks;
@@ -440,7 +345,7 @@ mod test {
 
     #[test]
     fn test_new_cube_is_solved() {
-        let mut cube = Cube::new();
+        let cube = Cube::new();
         assert!(cube.is_solved());
     }
 
@@ -496,6 +401,43 @@ mod test {
     }
 
     #[test]
+    fn test_turn_and_tip_back_is_still_solved() {
+        let mut cube = Cube::new();
+        cube.turn();
+        cube.tip_back();
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_tip_back_and_turn_is_still_solved() {
+        let mut cube = Cube::new();
+        cube.tip_back();
+        cube.turn();
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_turn_back_is_still_solved() {
+        let mut cube = Cube::new();
+        cube.turn_back();
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_tip_forwards_is_still_solved() {
+        let mut cube = Cube::new();
+        cube.tip_forwards();
+        assert!(cube.is_solved());
+    }
+
+    #[test]
+    fn test_tip_back_is_still_solved() {
+        let mut cube = Cube::new();
+        cube.tip_back();
+        assert!(cube.is_solved());
+    }
+
+    #[test]
     fn test_turn_and_turn_back_same_as_original() {
         let mut cube = Cube::new();
         cube.turn();
@@ -505,7 +447,7 @@ mod test {
 
     #[test]
     fn test_cube_to_string() {
-        let mut cube = Cube::new();
+        let cube = Cube::new();
         let expected = "
                 ____________
                /  y  /  y  /|
@@ -602,6 +544,7 @@ mod test {
             |  r  |  p  | /
             |_____|_____|/
 ";
+        assert!(!cube.is_solved(), "{:#?}", cube);
         assert_cube_strings_eq(expected, &cube.to_string());
     }
 
@@ -692,6 +635,7 @@ mod test {
             |  b  |  y  | /
             |_____|_____|/
 ";
+        assert_eq!(expected, &cube.to_string(), "{:#?}", cube);
         assert_cube_strings_eq(expected, &cube.to_string());
     }
     #[test]
