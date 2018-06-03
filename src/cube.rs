@@ -1,11 +1,11 @@
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Cube {
     blocks: [Block; 8],
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct Block {
     top: Color,
     bottom: Color,
@@ -15,16 +15,7 @@ pub struct Block {
     back: Color,
 }
 
-const BLOCK_X: Block = Block {
-    top: X,
-    bottom: X,
-    front: X,
-    back: X,
-    lhs: X,
-    rhs: X,
-};
-
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 enum Color {
     Y,
     P,
@@ -57,56 +48,15 @@ impl Display for Color {
 
 use self::Color::*;
 
-const BLOCKS: [Block; 8] = [
+pub const BLOCKS: [Block; 8] = [
     Block {
         top: Y,
         back: P,
         lhs: G,
-        ..BLOCK_X
-    }, // 0
-    Block {
-        top: Y,
-        back: P,
         rhs: B,
-        ..BLOCK_X
-    }, // 1
-    Block {
-        top: Y,
         front: R,
-        lhs: G,
-        ..BLOCK_X
-    }, // 2
-    Block {
-        top: Y,
-        front: R,
-        rhs: B,
-        ..BLOCK_X
-    }, // 3
-    Block {
         bottom: W,
-        back: P,
-        lhs: G,
-        ..BLOCK_X
-    }, // 4
-    Block {
-        bottom: W,
-        back: P,
-        rhs: B,
-        ..BLOCK_X
-    }, // 5
-    Block {
-        bottom: W,
-        front: R,
-        lhs: G,
-        ..BLOCK_X
-    }, // 6
-    Block {
-        bottom: W,
-        front: R,
-        rhs: B,
-        ..BLOCK_X
-    }, // 7
-];
+    }; 8];
 
 impl Block {
     pub fn tip_back(&mut self) -> Block {
@@ -266,6 +216,13 @@ impl Cube {
         }
 
         self.blocks = next_blocks;
+    }
+
+    /// Tips the cube to the right so the top now faces to the rhs.
+    pub fn tip_right(&mut self) {
+        self.turn();
+        self.tip_forwards();
+        self.turn_back();
     }
 
     /// Rotates the right-hand side of the cube away from the viewer.
@@ -615,6 +572,27 @@ mod test {
         assert_cube_strings_eq(expected, &cube.to_string());
     }
 
+    #[test]
+    fn test_tip_right_to_string() {
+        let mut cube = Cube::new();
+
+        cube.tip_right();
+
+        let expected = "
+                ____________
+               /  g  /  g  /|
+              /_____/_____/ |
+             /  g  /  g  /|y|
+            /_____/_____/ | |
+            |     |     |y|/|
+            |  r  |  r  | /y|
+            |_____|_____|/| |
+            |     |     |y|/
+            |  r  |  r  | /
+            |_____|_____|/
+";
+        assert_cube_strings_eq(expected, &cube.to_string());
+    }
     #[test]
     fn test_turn_then_twist_to_string() {
         let mut cube = Cube::new();

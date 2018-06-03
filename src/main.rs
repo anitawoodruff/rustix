@@ -4,6 +4,8 @@ extern crate text_io;
 use std::io::{self, Write};
 
 mod cube;
+mod solver;
+
 use cube::Cube;
 
 fn print_cube(cube: &Cube) {
