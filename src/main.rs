@@ -7,6 +7,7 @@ mod cube;
 mod solver;
 
 use cube::Cube;
+use solver::Solver;
 
 fn print_cube(cube: &Cube) {
     println!("{}", cube);
@@ -26,6 +27,11 @@ fn print_solved_status(cube: &mut Cube) {
 fn print_cube_and_solved_status(cube: &mut Cube) {
     print_cube(cube);
     print_solved_status(cube);
+}
+
+fn solve_cube(cube: Cube) -> Cube {
+    let mut solver = Solver::new();
+    solver.solve(cube, 0)
 }
 
 fn main() {
@@ -52,6 +58,7 @@ fn main() {
             'r' => cube.undo_front_twist(),
             'x' => cube.bottom_twist_back(),
             'c' => cube.bottom_twist(),
+            'S' => cube = solve_cube(cube),
             _ => {}
         }
         print_cube_and_solved_status(&mut cube);

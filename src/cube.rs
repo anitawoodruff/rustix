@@ -48,15 +48,14 @@ impl Display for Color {
 
 use self::Color::*;
 
-pub const BLOCKS: [Block; 8] = [
-    Block {
-        top: Y,
-        back: P,
-        lhs: G,
-        rhs: B,
-        front: R,
-        bottom: W,
-    }; 8];
+pub const BLOCKS: [Block; 8] = [Block {
+    top: Y,
+    back: P,
+    lhs: G,
+    rhs: B,
+    front: R,
+    bottom: W,
+}; 8];
 
 impl Block {
     pub fn tip_back(&mut self) -> Block {
@@ -225,6 +224,13 @@ impl Cube {
         self.turn_back();
     }
 
+    /// Tips the cube to the left so the top now faces to the lhs.
+    pub fn tip_left(&mut self) {
+        self.tip_right();
+        self.tip_right();
+        self.tip_right();
+    }
+
     /// Rotates the right-hand side of the cube away from the viewer.
     pub fn twist_back(&mut self) {
         self.twist_by(3);
@@ -328,6 +334,7 @@ mod test {
         cube.twist();
         cube.twist();
         cube.twist();
+        assert_eq!(cube, Cube::new());
         assert!(cube.is_solved());
     }
 
