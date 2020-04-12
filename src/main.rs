@@ -31,7 +31,7 @@ fn print_cube_and_solved_status(cube: &mut Cube) {
 
 fn solve_cube(cube: Cube) -> Cube {
     let mut solver = Solver::new();
-    solver.solve(cube, 0)
+    solver.solve(cube)
 }
 
 fn main() {
@@ -39,7 +39,7 @@ fn main() {
     print_cube_and_solved_status(&mut cube);
 
     loop {
-        print!("Enter a letter (w/a/s/d/f/r/g/t/x/c/q): ");
+        print!("Enter a letter (w/a/s/d/f/r/g/t/x/c/S/h/q): ");
         let _ = io::stdout().flush();
 
         let input: char = read!();
@@ -59,6 +59,16 @@ fn main() {
             'x' => cube.bottom_twist_back(),
             'c' => cube.bottom_twist(),
             'S' => cube = solve_cube(cube),
+            'e' => cube.tip_right(),
+            'z' => cube.tip_left(),
+            'h' => {
+                println!("q - quits");
+                println!("g - twists RHS of cube towards screen");
+                println!("t - twists RHS of cube away from screen");
+                println!("f - twists front face of cube clockwise");
+                println!("r - twists front face of cube anti-clockwise");
+                println!("S - Solves the cube!!!");
+            }
             _ => {}
         }
         print_cube_and_solved_status(&mut cube);

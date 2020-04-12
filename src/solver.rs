@@ -12,14 +12,18 @@ impl Solver {
         }
     }
 
-    /// Returns true if passed a solved cube, else recursively twists the cube till solved.
-    pub fn solve(&mut self, cube: Cube, depth: usize) -> Cube {
+    /// Returns true if passed a solved cube, else twists the cube
+    /// till solved.
+    pub fn solve(&mut self, cube: Cube) -> Cube {
         // this isn't really a stack but sshhh!
         let mut stack = VecDeque::new();
+        let mut operations = VecDeque::new();
         stack.push_back(cube);
         while let Some(cube) = stack.pop_front() {
-            println!("{}", stack.len());
+            let op = operations.pop_front();
+            println!("{:?}", op);
             if cube.is_solved() {
+                println!("Solved with operations: {:?}", op);
                 return cube;
             }
             self.checked.insert(cube);
@@ -28,18 +32,40 @@ impl Solver {
             twisty_cube.twist();
             if !self.checked.contains(&twisty_cube) {
                 stack.push_back(twisty_cube);
+                stack.push_back(twisty_cube);
+                let op_string = "bottom_twist,";
+                if (op.is_some()) {
+                    op_string = "{:?} {}", op, op_string;
+                    operations.push_back(op_string);
+                } else {
+                    operations.push_back(op_string);
+                }
             }
 
             twisty_cube = cube;
             twisty_cube.front_twist();
             if !self.checked.contains(&twisty_cube) {
                 stack.push_back(twisty_cube);
+                let op_string = "front_twist,";
+                if (op.is_some()) {
+                    op_string = print!("{:?} {}", op, op_string);
+                    operations.push_back(op_string);
+                } else {
+                    operations.push_back(op_string);
+                }
             }
 
             twisty_cube = cube;
             twisty_cube.bottom_twist();
             if !self.checked.contains(&twisty_cube) {
                 stack.push_back(twisty_cube);
+                let op_string = "bottom_twist,";
+                if (op.is_some()) {
+                    op_string = print!("{:?} {}", op, op_string);
+                    operations.push_back(op_string);
+                } else {
+                    operations.push_back(op_string);
+                }
             }
         }
         panic!("Unsolvamable cube oh nose");
@@ -55,7 +81,7 @@ mod test {
     fn test_solve_is_noop_on_already_solved_cube() {
         let mut cube = Cube::new();
         let mut solver = Solver::new();
-        let result = solver.solve(cube, 0);
+        let result = solver.solve(cube);
 
         assert!(result.is_solved());
     }
@@ -66,7 +92,7 @@ mod test {
         let mut cube = Cube::new();
         cube.twist();
         cube.twist();
-        let result = solver.solve(cube, 0);
+        let result = solver.solve(cube);
 
         assert!(result.is_solved());
     }
@@ -79,7 +105,7 @@ mod test {
         cube.turn();
         cube.twist();
         cube.twist();
-        let result = solver.solve(cube, 0);
+        let result = solver.solve(cube);
 
         assert!(result.is_solved());
     }
@@ -101,7 +127,7 @@ mod test {
         assert!(!cube.is_solved());
 
         let mut solver = Solver::new();
-        let result = solver.solve(cube, 0);
+        let result = solver.solve(cube);
 
         assert!(result.is_solved());
     }
